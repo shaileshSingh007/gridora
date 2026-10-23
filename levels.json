@@ -1,0 +1,32 @@
+{
+  "levels": [
+    {
+      "id": 1,
+      "name": "Warm Up",
+      "grid": [
+        "S..#",
+        "##.#",
+        "....",
+        "#..G",
+        "...."
+      ],
+      "start": { "x": 0, "y": 0 },
+      "goal": { "x": 3, "y": 3 },
+      "description": "Reach the goal tile while avoiding walls."
+    },
+    {
+      "id": 2,
+      "name": "Double Corner",
+      "grid": [
+        "S..##",
+        "#....",
+        "..#..",
+        "..#G#",
+        "#####"
+      ],
+      "start": { "x": 0, "y": 0 },
+      "goal": { "x": 3, "y": 3 },
+      "description": "A slightly tighter maze with more turns."
+    }
+  ]
+}
