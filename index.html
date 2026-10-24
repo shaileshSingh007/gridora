@@ -90,6 +90,7 @@ h2{font-size:1.15rem;font-weight:800;letter-spacing:3px;text-transform:uppercase
   <p>Tap <b>ROTATE</b> to turn clockwise, then <b>MOVE</b> to roll forward until you hit something.</p>
   <p>The glowing ring on the board shows exactly where you will stop.</p>
   <p>Avoid the spiky <b>cactus balls</b> - touch one and you burst apart. Collect every yellow star to reveal the gate, then roll through it.</p>
+  <p>Roll into a glowing <b>portal</b> to warp to its twin. You exit along the small arrow in front of it, and the ring keeps turning, so time your move.</p>
   <p>Grab stars back-to-back for <b>combo</b> bonus points. Use <b>↻</b> to restart a level.</p>
   <p><b>VIEW</b> switches between hero and top-down cameras. Keyboard: arrows or WASD, Space to move, C for view.</p>
   <button id="helpClose" class="mb">Got it</button></div>
@@ -127,6 +128,7 @@ const SFX=(()=>{let c=null,m=null,nb=null,dead=false,muted=false,roll=null;
   land:fn(t=>{tone('sine',140,36,t,.4,.45);burst('lowpass',700,t,.3,.3)}),
   die:fn(t=>{tone('sawtooth',430,68,t,.55,.26);tone('square',175,48,t+.05,.45,.1);burst('bandpass',900,t,.35,.25)}),
   collect:fn(t=>[880,1318.5,1760].forEach((f,i)=>tone('triangle',f,0,t+i*.055,.2,.18))),
+  warp:fn(t=>{tone('sine',380,1300,t,.17,.15);tone('triangle',1300,560,t+.09,.2,.09)}),
   gateOpen:fn(t=>[523.25,659.25,783.99,1046.5].forEach((f,i)=>{tone('sine',f,0,t+i*.085,.6,.16);tone('triangle',f*2,0,t+i*.085,.6,.06)})),
   win:fn(t=>[[523.25,0,.2],[659.25,.14,.2],[783.99,.28,.2],[1046.5,.42,.6]].forEach(n=>{tone('sine',n[0],0,t+n[1],n[2],.2);tone('triangle',n[0]*2,0,t+n[1],n[2],.08)})),
   rollStart(){const x=ac();if(!x||roll)return;const s=x.createBufferSource();s.buffer=noise(x);s.loop=true;const lp=x.createBiquadFilter();lp.type='lowpass';lp.frequency.value=420;lp.Q.value=2.5;const g=x.createGain();g.gain.value=.0001;const l=x.createOscillator();l.frequency.value=12;const lg=x.createGain();lg.gain.value=.07;l.connect(lg);lg.connect(g.gain);s.connect(lp);lp.connect(g);g.connect(m);g.gain.linearRampToValueAtTime(.24,x.currentTime+.06);s.start();l.start();roll={s,g,l}},
@@ -177,6 +179,81 @@ rotBtn.onclick=()=>heroRotate();moveBtn.onclick=()=>heroMove();$('camBtn').oncli
 window.addEventListener('keydown',e=>{const k=e.code;if(['ArrowLeft','ArrowRight','KeyA','KeyD','KeyR'].includes(k))heroRotate();else if(['ArrowUp','KeyW','Space','Enter'].includes(k)){e.preventDefault();heroMove()}else if(k==='KeyC'||k==='KeyV')camMode=camMode==='HERO'?'BOARD':'HERO';else if(k==='KeyM')$('muteBtn').click()});
 ['pointerdown','touchstart','keydown'].forEach(ev=>window.addEventListener(ev,()=>SFX.unlock(),{once:true,passive:true}));
 window.addEventListener('resize',()=>engine.resize());
+
+/* ================= LINK PORTALS (paired teleporters) ================= */
+/* level JSON: "portals":["3_3-5_6-0.5","10_2-6_8-0.1"]  ->  col_row-col_row-spin (spin = revolutions per second) */
+const PCOL=[[.2,.85,1],[1,.35,.85],[1,.62,.2],[.62,1,.3],[.7,.55,1]],PSPIN=TAU,PRAD=.39,MAXTP=6,QT=Math.PI/2;
+let ports=[],pairs=[],portAt={},tpGrow=0,tpCount=0,pendPort=null,tpJump=false;
+const exitAng=p=>(((Math.round(p.ang/QT)%4)+4)%4)*QT;
+function mkLinkShader(){
+ const S=BABYLON.Effect.ShadersStore;
+ S.gridoraLinkVertexShader=`precision highp float;attribute vec3 position;uniform mat4 worldViewProjection;varying vec2 vP;void main(){vP=position.xy;gl_Position=worldViewProjection*vec4(position,1.0);}`;
+ S.gridoraLinkFragmentShader=`precision highp float;varying vec2 vP;uniform float t;uniform vec3 col;
+ float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+ float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y);}
+ void main(){
+  float r=length(vP);if(r>1.)discard;
+  float an=atan(vP.y,vP.x),sw=an+(1.-r)*5.-t*2.2;
+  vec2 q=vec2(cos(sw),sin(sw))*(r*2.2+.3);
+  float f=n(q*2.+t*.3)*.6+n(q*4.-t*.5)*.4;
+  float arms=.5+.5*sin(an*3.+(1.-r)*9.-t*3.);
+  float edge=1.-smoothstep(.8,1.,r),core=1.-smoothstep(0.,.5,r),rim=smoothstep(.72,.95,r)*edge;
+  vec3 c=mix(col*.5,col,f)*(.35+arms*.9)+mix(col,vec3(1.),.65)*core*core*1.1;
+  c=mix(c,mix(col,vec3(1.),.4),rim*.6);
+  float al=edge*(.25+f*.4+arms*.25)+core*.55+rim*.3;
+  gl_FragColor=vec4(c,clamp(al,0.,1.));
+ }`;
+}
+function killLinks(){
+ ports.forEach(p=>{glow.removeExcludedMesh(p.disc);p.root.dispose()});
+ pairs.forEach(o=>{o.dm.dispose();o.rm.dispose()});
+ ports=[];pairs=[];portAt={};
+}
+function buildLinks(list){
+ killLinks();let ci=0;
+ (list||[]).forEach(s=>{
+  const q=s.split('-');if(q.length<2)return;
+  const a=q[0].split('_').map(Number),b=q[1].split('_').map(Number);let sp=q.length>2?parseFloat(q[2]):.25;if(isNaN(sp))sp=.25;
+  if(a.length<2||b.length<2||a.concat(b).some(v=>isNaN(v)||v<1||v>20))return;
+  const ka=a[0]+'_'+a[1],kb=b[0]+'_'+b[1];if(ka===kb||portAt[ka]||portAt[kb])return;
+  const cl=PCOL[ci%PCOL.length],k3=C3(cl[0],cl[1],cl[2]);
+  const dm=new BABYLON.ShaderMaterial('lk'+ci,scene,{vertex:'gridoraLink',fragment:'gridoraLink'},{attributes:['position'],uniforms:['worldViewProjection','t','col'],needAlphaBlending:true});
+  dm.backFaceCulling=false;dm.alphaMode=BABYLON.Engine.ALPHA_ADD;dm.disableDepthWrite=true;dm.setColor3('col',k3);dm.setFloat('t',0);
+  const rm=new BABYLON.StandardMaterial('lkr'+ci,scene);rm.diffuseColor=C3(0,0,0);rm.emissiveColor=k3.scale(.9);rm.disableLighting=true;
+  const mk=(c,r)=>{
+   const root=new BABYLON.TransformNode('lk',scene);root.position.set(wc(c),0,wc(r));root.scaling.setAll(.001);
+   const ring=new BABYLON.TransformNode('lkn',scene);ring.parent=root;ring.position.y=.43;
+   const disc=BABYLON.MeshBuilder.CreateDisc('lkd',{radius:1,tessellation:48},scene);disc.scaling.setAll(PRAD);disc.material=dm;disc.parent=ring;disc.isPickable=false;glow.addExcludedMesh(disc);
+   const rim=BABYLON.MeshBuilder.CreateTorus('lkt',{diameter:PRAD*2,thickness:.035,tessellation:48},scene);rim.rotation.x=Math.PI/2;rim.material=rm;rim.parent=ring;rim.isPickable=false;
+   const arr=new BABYLON.TransformNode('lka',scene);arr.parent=root;arr.position.y=.04;
+   const ah=BABYLON.MeshBuilder.CreateCylinder('lkh',{diameterTop:0,diameterBottom:.14,height:.15,tessellation:16},scene);ah.rotation.x=Math.PI/2;ah.position.z=.2;ah.material=rm;ah.parent=arr;ah.isPickable=false;
+   return{c,r,root,ring,arr,disc,cl,spd:sp,ang:0,vis:0,s:0,mate:null};
+  };
+  const pa=mk(a[0],a[1]),pb=mk(b[0],b[1]);pa.mate=pb;pb.mate=pa;
+  portAt[ka]=pa;portAt[kb]=pb;ports.push(pa,pb);pairs.push({dm,rm});ci++;
+ });
+}
+/* ball reached portal p: jump to its twin and keep rolling along the twin's current (snapped) facing */
+function linkEnter(p){
+ const q=p.mate;SFX.warp();vib(12);fx('warp',V3(wc(p.c),.4,wc(p.r)),p.cl);
+ tpCount++;col=q.c;row=q.r;ang=exitAng(q);
+ hero.position.set(wc(q.c),CH/2,wc(q.r));hero.scaling.setAll(.15);tpGrow=.22;tpJump=true;
+ fx('warp',V3(wc(q.c),.4,wc(q.r)),q.cl);
+ const m=calc(tpCount);
+ if(!m.moved){moving=false;pendPort=null;willWin=willBlocked=false;SFX.rollStop();SFX.collide();vib(25);shakeT=.15;impact();preview();return}
+ col=m.won?23:m.c;row=m.r;willWin=m.won;willBlocked=m.blocked;pendPort=m.port;target=V3(wc(col),CH/2,wc(row));
+}
+function updLinks(dt,now){
+ pairs.forEach(o=>o.dm.setFloat('t',now));
+ for(const p of ports){
+  p.ang=(p.ang+PSPIN*p.spd*dt)%TAU;p.ring.rotation.y=p.ang;
+  p.vis+=(shortest(p.vis,Math.round(p.ang/QT)*QT)-p.vis)*(1-Math.exp(-16*dt));p.arr.rotation.y=p.vis;
+  if(p.s<1){p.s=Math.min(1,p.s+dt/.6);p.root.scaling.setAll(Math.max(.001,1-Math.pow(1-p.s,3)))}
+ }
+ if(state!=='playing')return;
+ if(tpGrow>0){tpGrow-=dt;const k=Math.max(0,tpGrow)/.22;hero.scaling.setAll(.15+.85*(1-k*k))}
+ if(moving&&pendPort&&!willWin&&target){const d=BABYLON.Vector3.Distance(hero.position,target);if(d<CELL*.8)hero.scaling.setAll(Math.min(1,.15+.85*d/(CELL*.8)))}
+}
 
 /* ================= SCENE ================= */
 function mkTex(name,w,h,draw){const t=new BABYLON.DynamicTexture(name,{width:w,height:h},scene,true),x=t.getContext();draw(x,w,h);t.update();return t}
@@ -294,7 +371,7 @@ function init(){
  const pbm=pm.clone('pbm');pbm.alpha=.22;
  pBar=BABYLON.MeshBuilder.CreateBox('pb',{width:1,height:.01,depth:1},scene);pBar.material=pbm;pBar.isPickable=false;pBar.setEnabled(false);
 
- buildPortal();
+ buildPortal();mkLinkShader();
 
  trail=new BABYLON.ParticleSystem('trail',300,scene);trail.particleTexture=flare;trail.emitter=hero;trail.color1=C4(.5,.85,1,.9);trail.color2=C4(.8,.6,1,.8);trail.colorDead=C4(0,0,0,0);trail.minSize=.18;trail.maxSize=.4;trail.minLifeTime=.3;trail.maxLifeTime=.6;trail.emitRate=180;trail.direction1=V3(-.3,.2,-.3);trail.direction2=V3(.3,.6,.3);trail.minEmitPower=.3;trail.maxEmitPower=.8;trail.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE;
 
@@ -370,9 +447,10 @@ const FX={
  hit:{c1:[.8,.5,1,1],c2:[1,.9,.6,1],d1:[-2.5,.4,-2.5],d2:[2.5,3,2.5],g:-9,r:1200,du:.12,l:[.25,.6],s:[.04,.12]},
  death:{c1:[.3,1,.3,1],c2:[1,.9,.4,1],d1:[-3,-1,-3],d2:[3,3,3],g:-4,r:2000,du:.4,l:[.5,1.2],s:[.08,.2]},
  collect:{c1:[1,.85,.2,1],c2:[1,1,.6,1],d1:[-2,.5,-2],d2:[2,4,2],g:-7,r:1800,du:.16,l:[.2,.6],s:[.06,.15]},
+ warp:{c1:[1,1,1,1],c2:[1,1,1,1],d1:[-1.2,.3,-1.2],d2:[1.2,2.4,1.2],g:-2.5,r:700,du:.1,l:[.3,.7],s:[.04,.1]},
  gate:{c1:[.3,1,.8,1],c2:[.7,1,1,1],d1:[-2,1,-2],d2:[2,5,2],g:-3,r:1500,du:.3,l:[.4,1.1],s:[.06,.16]}};
-function fx(t,p){const o=FX[t],ps=new BABYLON.ParticleSystem('fx',700,scene);ps.particleTexture=flare;ps.emitter=p.clone();ps.color1=C4(...o.c1);ps.color2=C4(...o.c2);ps.colorDead=C4(0,0,0,0);ps.direction1=V3(...o.d1);ps.direction2=V3(...o.d2);ps.gravity=V3(0,o.g,0);ps.emitRate=o.r;ps.targetStopDuration=o.du;ps.minLifeTime=o.l[0];ps.maxLifeTime=o.l[1];ps.minSize=o.s[0];ps.maxSize=o.s[1];ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE;ps.disposeOnStop=true;ps.start()}
-function shock(p,c){const m=BABYLON.MeshBuilder.CreateTorus('sw',{diameter:1,thickness:.06,tessellation:48},scene),mt=new BABYLON.StandardMaterial('swm',scene);mt.emissiveColor=c;mt.disableLighting=true;mt.alpha=.85;m.material=mt;m.position.set(p.x,.07,p.z);m.isPickable=false;shocks.push({m,t:0})}
+function fx(t,p,cc){const o=FX[t],ps=new BABYLON.ParticleSystem('fx',700,scene);ps.particleTexture=flare;ps.emitter=p.clone();ps.color1=cc?C4(cc[0],cc[1],cc[2],1):C4(...o.c1);ps.color2=cc?C4(.5+cc[0]*.5,.5+cc[1]*.5,.5+cc[2]*.5,1):C4(...o.c2);ps.colorDead=C4(0,0,0,0);ps.direction1=V3(...o.d1);ps.direction2=V3(...o.d2);ps.gravity=V3(0,o.g,0);ps.emitRate=o.r;ps.targetStopDuration=o.du;ps.minLifeTime=o.l[0];ps.maxLifeTime=o.l[1];ps.minSize=o.s[0];ps.maxSize=o.s[1];ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE;ps.onAnimationEnded=()=>setTimeout(()=>ps.dispose(false),0);ps.start()}
+function shock(p,c){const m=BABYLON.MeshBuilder.CreateTorus('sw',{diameter:1,thickness:.016,tessellation:64},scene),mt=new BABYLON.StandardMaterial('swm',scene);mt.emissiveColor=c;mt.disableLighting=true;mt.alpha=.4;m.material=mt;m.position.set(p.x,.06,p.z);m.isPickable=false;glow.addExcludedMesh(m);shocks.push({m,t:0})}
 
 function impact(){
  const dx=Math.round(Math.sin(ang)),dz=Math.round(Math.cos(ang)),hp=hero.position,p=V3(hp.x+dx*HR,.35,hp.z+dz*HR),n=obsNodes[(col+dx)+'_'+(row+dz)];
@@ -401,12 +479,12 @@ function loadLevel(i,reset=true){
  if(!LV.length){console.error('[GRIDORA] No levels loaded');return}
  if(i>=LV.length){i=0;score=0}
  lvIdx=i;const L=LV[i];ST.set('spaceBoardLevel',i);$('lv').textContent=L.n;$('sc').textContent=score;gHide();
- clearFrags();clearDyn();killGate();token++;totalPow=L.pw.length;got=0;steps=0;combo=0;gateOpen=totalPow===0;powHidden=false;dropH=DROP;
+ clearFrags();clearDyn();killGate();tpGrow=0;pendPort=null;tpCount=0;token++;totalPow=L.pw.length;got=0;steps=0;combo=0;gateOpen=totalPow===0;powHidden=false;dropH=DROP;
  obs=new Set(L.obs);buildWall(L.gate,!gateOpen);buildGate(L.gate,gateOpen);buildDots();powVisible=!powVisible;refreshPower();
  if(reset){col=1;row=1;hero.position.set(wc(1),CH/2,wc(1));hero.rotationQuaternion=BABYLON.Quaternion.Identity();rollQ=BABYLON.Quaternion.Identity();hero.scaling.setAll(1);ang=0;visAng=0}
  L.obs.forEach(c=>{const p=c.split('_');spawn(+p[0],+p[1],'obstacle')});
  L.pw.forEach(c=>{const p=c.split('_');spawn(+p[0],+p[1],'powerup')});
- L.en.forEach(d=>{if(d.indexOf('-')>-1){const p=d.split('-');if(p.length<3)return;const s=p[0].split('_').map(Number),e=p[1].split('_').map(Number),sp=parseFloat(p[2]);if(s.concat(e).some(isNaN))return;spawn(s[0],s[1],'enemy',{ec:e[0],er:e[1],s:sp>0?sp:2})}else{const p=d.split('_').map(Number);if(!isNaN(p[0])&&!isNaN(p[1]))spawn(p[0],p[1],'enemy')}});
+ L.en.forEach(d=>{if(d.indexOf('-')>-1){const p=d.split('-');if(p.length<3)return;const s=p[0].split('_').map(Number),e=p[1].split('_').map(Number),sp=parseFloat(p[2]);if(s.concat(e).some(isNaN))return;spawn(s[0],s[1],'enemy',{ec:e[0],er:e[1],s:sp>0?sp:2})}else{const p=d.split('_').map(Number);if(!isNaN(p[0])&&!isNaN(p[1]))spawn(p[0],p[1],'enemy')}});buildLinks(L.pt);
  snap=true;preview();
 }
 function openGate(){
@@ -415,13 +493,13 @@ function openGate(){
  gateHint.textContent='Gate open';gateHint.classList.add('open');const t=token;setTimeout(()=>{if(t===token){powHidden=true;refreshPower()}},1900);preview();
 }
 
-function calc(){
- const dx=Math.round(Math.sin(ang)),dz=Math.round(Math.cos(ang)),L=LV[lvIdx];let c=col,r=row,won=false,blocked=false;
+function calc(tp){
+ const dx=Math.round(Math.sin(ang)),dz=Math.round(Math.cos(ang)),L=LV[lvIdx];let c=col,r=row,won=false,blocked=false,port=null;
  for(;;){const nc=c+dx,nr=r+dz;
   if(nc>20){if(dx===1&&r===L.gate&&gateOpen){won=true;c=23}else blocked=true;break}
   if(nc<1||nr<1||nr>20||obs.has(nc+'_'+nr)){blocked=true;break}
-  c=nc;r=nr}
- return{c,r,won,blocked,moved:c!==col||r!==row||won};
+  c=nc;r=nr;if(!(tp>=MAXTP)&&portAt[c+'_'+r]){port=portAt[c+'_'+r];break}}
+ return{c,r,won,blocked,port,moved:c!==col||r!==row||won};
 }
 function preview(){
  if(!pRing)return;
@@ -435,7 +513,7 @@ function heroRotate(){if(state!=='playing'||moving)return;ang=(ang+Math.PI/2)%TA
 function heroMove(){
  if(moving||state!=='playing')return;const m=calc();
  if(!m.moved){SFX.collide();vib(30);shakeT=.12;impact();return}
- col=m.won?23:m.c;row=m.r;willWin=m.won;willBlocked=m.blocked;steps++;
+ col=m.won?23:m.c;row=m.r;willWin=m.won;willBlocked=m.blocked;pendPort=m.port;tpCount=0;steps++;
  target=V3(wc(col),CH/2,wc(row));moving=true;SFX.slide();SFX.rollStart();preview();gAdvance('move');
 }
 function award(){const p=Math.round(1000/Math.max(1,steps));score+=p;$('sc').textContent=score;ST.set('spaceBoardScore',score);steps=0;return p}
@@ -453,14 +531,14 @@ function portalTransition(){
 }
 function winTransition(){
  award();flash();showPortal(false);showUI(false);gHide();closeHelp();powHidden=true;refreshPower();
- clearDyn();killGate();walls.forEach(w=>{shadow.removeShadowCaster(w);w.dispose()});walls=[];
+ clearDyn();killGate();killLinks();walls.forEach(w=>{shadow.removeShadowCaster(w);w.dispose()});walls=[];
  boardMat.emissiveColor=C3(.1,.13,.2);
  [[.98,.76,.28,.38,.66,.98],[.98,.37,.48,.36,.9,.72],[.67,.47,.98,1,1,1]].forEach(c=>{const ps=new BABYLON.ParticleSystem('cf',300,scene);ps.particleTexture=flare;ps.emitter=V3(0,16,0);ps.minEmitBox=V3(-6,0,-6);ps.maxEmitBox=V3(6,0,6);ps.color1=C4(c[0],c[1],c[2],1);ps.color2=C4(c[3],c[4],c[5],1);ps.colorDead=C4(1,1,1,0);ps.direction1=V3(-.5,-1,-.5);ps.direction2=V3(.5,-1.6,.5);ps.gravity=V3(0,-2,0);ps.minSize=.12;ps.maxSize=.26;ps.minLifeTime=4;ps.maxLifeTime=6;ps.emitRate=50;ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE;ps.preWarmCycles=60;ps.preWarmStepOffset=5;ps.start();confSys.push(ps)});
  celeb=BABYLON.MeshBuilder.CreateTorus('cr',{diameter:BS*1.22,thickness:.14,tessellation:96},scene);const rm=new BABYLON.StandardMaterial('crm',scene);rm.emissiveColor=C3(.35,.62,1);rm.diffuseColor=C3(.15,.3,.6);celeb.material=rm;celeb.position.y=-.22;
  hero.position.set(0,15,-3.6);hero.rotationQuaternion=BABYLON.Quaternion.Identity();rollQ=BABYLON.Quaternion.Identity();hero.scaling.setAll(1);
  vel=V3(0,-6,0);dropH=15;camMode='BOARD';snap=true;camBlend=1;trail.start();
 }
-function endWin(){confSys.forEach(p=>p.dispose());confSys=[];if(celeb){celeb.dispose();celeb=null}boardMat.emissiveColor=C3(0,0,0)}
+function endWin(){confSys.forEach(p=>p.dispose(false));confSys=[];if(celeb){celeb.dispose();celeb=null}boardMat.emissiveColor=C3(0,0,0)}
 $('againBtn').onclick=()=>{$('win').classList.add('hid');endWin();resetProgress();showUI(true);ang=0;visAng=0;camMode='HERO';snap=true;powHidden=false;loadLevel(0);state='playing';refreshPower();toast('Level 1');gStart()};
 $('exitBtn').onclick=()=>location.reload();
 
@@ -512,7 +590,7 @@ function loop(){
   if(gate.t<1){gate.t=Math.min(1,gate.t+dt/.7);const e=1-Math.pow(1-gate.t,3);gate.root.scaling.setAll(Math.max(.001,e*(1+Math.sin(gate.t*Math.PI)*.1)))}
   gate.dm.alpha=.35+Math.sin(now*3)*.1;gate.orbs.forEach((o,i)=>{const a=now*2.2+i*Math.PI/3;o.position.set(0,.48+Math.sin(a)*.4,Math.cos(a)*.34)});gate.bm.alpha=.14+Math.sin(now*2.5)*.06}
  if(celeb){celeb.rotation.y+=dt*.5;const p=1+Math.sin(now*2.4)*.025;celeb.scaling.set(p,1,p)}
- for(let i=shocks.length-1;i>=0;i--){const s=shocks[i];s.t+=dt;const k=s.t/.7;s.m.scaling.set(1+k*14,1,1+k*14);s.m.material.alpha=.85*(1-k);if(k>=1){s.m.dispose(false,true);shocks.splice(i,1)}}
+ updLinks(dt,now);for(let i=shocks.length-1;i>=0;i--){const s=shocks[i];s.t+=dt;const k=Math.min(1,s.t/.55),e=1-(1-k)*(1-k);s.m.scaling.set(.5+e*3,1,.5+e*3);s.m.material.alpha=.4*(1-k)*(1-k);if(k>=1){glow.removeExcludedMesh(s.m);s.m.dispose(false,true);shocks.splice(i,1)}}
  if(squashT>0&&state!=='dying'){squashT-=dt;const a=squashT>0?Math.sin(squashT/.35*Math.PI)*.3:0;hero.scaling.set(1+a,1-a*1.1,1+a)}
  refreshPower();
 
@@ -524,7 +602,7 @@ function loop(){
    if(pups[k]){const n=pups[k];delete pups[k];dynM.splice(dynM.indexOf(n),1);n.getChildMeshes().forEach(x=>shadow.removeShadowCaster(x));n.dispose();got++;const d=dotsEl.children[got-1];if(d)d.classList.add('on');
     const t=performance.now();combo=(t-lastCol<2500)?combo+1:1;lastCol=t;const pts=50*combo;score+=pts;$('sc').textContent=score;ST.set('spaceBoardScore',score);popup('+'+pts+(combo>1?'  COMBO x'+combo:''));
     SFX.collect();vib(15);fx('collect',cp);if(got>=totalPow)openGate()}
-   if(BABYLON.Vector3.Distance(cp,target)<=step){
+   if(pendPort&&!willWin&&BABYLON.Vector3.Distance(cp,target)<=step){hero.position.copyFrom(target);linkEnter(pendPort)}else if(BABYLON.Vector3.Distance(cp,target)<=step){
     hero.position.copyFrom(target);moving=false;
     if(willWin){SFX.win();gHide();launchArc()}
     else{SFX.rollStop();if(willBlocked){SFX.collide();vib(25);shakeT=.15;impact()}preview()}
@@ -546,7 +624,7 @@ function loop(){
 
  if(state==='playing'||state==='falling'){
   const dx=hero.position.x-prev.x,dz=hero.position.z-prev.z,h=Math.hypot(dx,dz);
-  if(h>.0005){const dir=V3(dx,0,dz).normalize(),ax=BABYLON.Vector3.Cross(BABYLON.Axis.Y,dir).normalize();rollQ=BABYLON.Quaternion.RotationAxis(ax,h/HR).multiply(rollQ);hero.rotationQuaternion=rollQ}
+  if(tpJump)tpJump=false;else if(h>.0005){const dir=V3(dx,0,dz).normalize(),ax=BABYLON.Vector3.Cross(BABYLON.Axis.Y,dir).normalize();rollQ=BABYLON.Quaternion.RotationAxis(ax,h/HR).multiply(rollQ);hero.rotationQuaternion=rollQ}
  }
 }
 
@@ -556,8 +634,9 @@ async function loadLevelData(){
   const r=await fetch('levels.json',{cache:'no-cache'});
   if(!r.ok)throw new Error('HTTP '+r.status+' '+r.statusText);
   const d=await r.json();
+  const toPArr=v=>String(Array.isArray(v)?v.join(','):(v||'')).replace(/[\[\]"']/g,'').split(/[\s,]+/).filter(Boolean);
   const toArr=v=>Array.isArray(v)?v.filter(s=>typeof s==='string'&&s.length):(typeof v==='string'&&v?v.split(' ').filter(Boolean):[]);
-  LV=d.levels.map((r,i)=>({n:i+1,gate:r.gate|0,obs:toArr(r.obstacles),pw:toArr(r.powerups),en:toArr(r.enemies)}));
+  LV=d.levels.map((r,i)=>({n:i+1,gate:r.gate|0,obs:toArr(r.obstacles),pw:toArr(r.powerups),en:toArr(r.enemies),pt:toPArr(r.portals)}));
   GUIDES=d.guides||{};
   if(!LV.length)throw new Error('No levels in levels.json');
   return true;
