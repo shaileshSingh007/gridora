@@ -13,19 +13,32 @@ html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
 body{height:100%;overflow:hidden;background:#070b1c;color:var(--tx);user-select:none;-webkit-user-select:none}
 #c{position:fixed;inset:0;width:100%;height:100%;touch-action:none;outline:none}
 .hid{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
-#hud{position:fixed;top:0;left:0;right:0;padding:calc(var(--st) + 12px) 14px 0;display:flex;justify-content:space-between;pointer-events:none;z-index:50;transition:opacity .4s}
-.pill{background:var(--gl);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--bd);padding:7px 15px;border-radius:40px;font-size:.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase}
-.pill b{color:var(--ac);font-size:1.1rem;margin-left:8px;font-weight:800;text-shadow:0 0 12px rgba(59,130,246,.5)}
-#top{position:fixed;top:calc(var(--st) + 12px);left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:58;transition:opacity .4s}
-.rb{width:38px;height:38px;border-radius:50%;background:var(--gl);border:1px solid var(--bd);color:#c8dcff;font:800 1rem Inter,sans-serif;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);touch-action:manipulation}
+#hud{position:fixed;top:0;left:0;right:0;padding:calc(var(--st) + 48px) 14px 0;display:flex;justify-content:space-between;pointer-events:none;z-index:50;transition:opacity .4s}
+.pill{background:var(--gl);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--bd);padding:8px 11px;border-radius:40px;font-size:.58rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.pill b{color:var(--ac);font-size:.95rem;margin-left:6px;font-weight:800;text-shadow:0 0 12px rgba(59,130,246,.5)}
+.pill b.s4{font-size:.8rem}.pill b.s5{font-size:.66rem}
+#jb{position:fixed;top:calc(var(--st) + 10px);left:14px;right:14px;height:26px;display:flex;align-items:center;gap:9px;z-index:57;pointer-events:none;transition:opacity .4s}
+.jd{width:11px;height:11px;border-radius:50%;border:2px solid #7fb4f5;background:rgba(8,14,22,.85);flex:none}
+.jt{position:relative;flex:1;height:4px;border-radius:4px;background:rgba(120,170,235,.25)}
+.jt u{position:absolute;top:-1px;width:2px;height:6px;margin-left:-1px;border-radius:1px;background:rgba(150,190,240,.4)}
+#jf{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:4px;background:linear-gradient(90deg,#3b82f6,#7dd3fc);transition:width .9s ease}
+#jk{position:absolute;top:50%;left:0;width:15px;height:15px;margin:-7.5px 0 0 -7.5px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#cfd8ea 45%,#8795b0);box-shadow:0 0 10px rgba(96,165,250,.9);transition:left .9s ease}
+.jh{width:22px;height:22px;flex:none;fill:#7fb4f5;filter:drop-shadow(0 0 4px rgba(59,130,246,.6));transition:fill .5s}
+#jb.home .jh{fill:#ffe27a;filter:drop-shadow(0 0 8px rgba(255,200,60,.9))}
+#win{background:none;align-items:flex-end;pointer-events:none}
+#win .panel{pointer-events:auto;margin-bottom:calc(var(--sb) + 22px);padding:14px 16px;border-radius:24px}
+#win .panel>.sub:not(#bestTxt),#win h1,#win .big{display:none}
+#win #bestTxt{margin:0 0 4px}
+#top{position:fixed;top:calc(var(--st) + 48px);left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:58;transition:opacity .4s}
+.rb{width:34px;height:34px;border-radius:50%;background:var(--gl);border:1px solid var(--bd);color:#c8dcff;font:800 1rem Inter,sans-serif;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);touch-action:manipulation}
 .rb:active{transform:scale(.92);background:rgba(59,130,246,.3)}
 .hint{position:fixed;left:50%;transform:translateX(-50%);z-index:55;pointer-events:none;text-align:center;transition:opacity .3s,visibility .3s}
-#gateHint{top:calc(var(--st) + 60px);font-size:.6rem;font-weight:600;letter-spacing:2.6px;text-transform:uppercase;color:#96beeb;text-shadow:0 0 14px rgba(59,130,246,.6);white-space:nowrap;animation:pl 2.4s infinite}
+#gateHint{top:calc(var(--st) + 96px);font-size:.6rem;font-weight:600;letter-spacing:2.6px;text-transform:uppercase;color:#96beeb;text-shadow:0 0 14px rgba(59,130,246,.6);white-space:nowrap;animation:pl 2.4s infinite}
 #gateHint.open{color:#7dffc4;text-shadow:0 0 20px rgba(80,255,180,.85);animation:none}
-#dots{top:calc(var(--st) + 82px);display:flex;gap:9px}
+#dots{top:calc(var(--st) + 118px);display:flex;gap:9px}
 .pd{width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(110,165,235,.7);background:rgba(59,130,246,.1);transition:.3s}
 .pd.on{background:#60a5fa;border-color:#a8d0ff;box-shadow:0 0 10px #60a5fa}
-#guide{top:calc(var(--st) + 106px);max-width:90vw;font-size:.66rem;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#dbeaff;background:rgba(9,16,28,.86);border:1px solid rgba(96,165,250,.5);padding:9px 18px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,.7),0 0 22px rgba(59,130,246,.35);line-height:1.4;animation:pl 2s infinite}
+#guide{top:calc(var(--st) + 142px);max-width:90vw;font-size:.66rem;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#dbeaff;background:rgba(9,16,28,.86);border:1px solid rgba(96,165,250,.5);padding:9px 18px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,.7),0 0 22px rgba(59,130,246,.35);line-height:1.4;animation:pl 2s infinite}
 @keyframes pl{50%{opacity:.6}}
 #toast{position:fixed;top:36%;left:50%;transform:translate(-50%,-50%);z-index:70;pointer-events:none;font-weight:900;font-size:2.1rem;letter-spacing:8px;text-transform:uppercase;text-shadow:0 0 30px rgba(59,130,246,.9);opacity:0;white-space:nowrap}
 #toast.show{animation:tst 1.8s ease forwards}
@@ -66,6 +79,7 @@ h2{font-size:1.15rem;font-weight:800;letter-spacing:3px;text-transform:uppercase
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="jb" class="hid"><i class="jd"></i><div class="jt" id="jt"><i id="jf"></i><b id="jk"></b></div><svg class="jh" viewBox="0 0 24 24"><path d="M12 2.6 1.8 11.7h3v9.7h5.4v-6.2h3.6v6.2h5.4v-9.7h3z"/></svg></div>
 <div id="hud" class="hid"><div class="pill">Score<b id="sc">0</b></div><div class="pill">Level<b id="lv">1</b></div></div>
 <div id="top" class="hid"><button id="helpBtn" class="rb" aria-label="How to play">?</button><button id="rstBtn" class="rb" aria-label="Restart level">↻</button><button id="muteBtn" class="rb" aria-label="Sound">♪</button></div>
 <div id="gateHint" class="hint hid"></div>
@@ -148,7 +162,7 @@ let scene,cam,hero,heroMat,shadow,glow,flare,borderMat,boardMat,obsMat,cactMat,s
 
 /* ================= UI ================= */
 const gateHint=$('gateHint'),dotsEl=$('dots'),guideEl=$('guide'),rotBtn=$('rotBtn'),moveBtn=$('moveBtn');
-function showUI(hudOn){['hud','top','controls'].forEach(i=>$(i).classList.toggle('hid',!hudOn))}
+function showUI(hudOn){['hud','top','controls','jb'].forEach(i=>$(i).classList.toggle('hid',!hudOn))}
 function toast(t){const e=$('toast');e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show')}
 function popup(t){const e=$('pop');e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show')}
 function flash(){const f=$('flash');f.style.transition='none';f.style.opacity=1;void f.offsetWidth;f.style.transition='opacity .8s ease-out';f.style.opacity=0}
@@ -255,6 +269,169 @@ function updLinks(dt,now){
  if(moving&&pendPort&&!willWin&&target){const d=BABYLON.Vector3.Distance(hero.position,target);if(d<CELL*.8)hero.scaling.setAll(Math.min(1,.15+.85*d/(CELL*.8)))}
 }
 
+/* ================= JOURNEY BAR + HOME (white marble finale) ================= */
+new MutationObserver(()=>{const n=$('sc').textContent.length;$('sc').className=n>4?'s5':n>3?'s4':''}).observe($('sc'),{childList:true,characterData:true,subtree:true});
+function updJourney(done){
+ const n=Math.max(1,LV.length),p=done?1:Math.min(1,lvIdx/n),jt=$('jt');
+ if(jt.dataset.n!==String(n)){jt.dataset.n=n;jt.querySelectorAll('u').forEach(e=>e.remove());if(n<=40)for(let i=1;i<n;i++){const u=document.createElement('u');u.style.left=(i/n*100)+'%';jt.appendChild(u)}}
+ $('jf').style.width=(p*100)+'%';$('jk').style.left=(p*100)+'%';$('jb').classList.toggle('home',p>=1);
+}
+const HZ=2.4,HS=3.4,HB=1.55;
+let hm=null,hmLight=null;
+
+/* plaque texture: accepts custom width/height; borders + fonts scale to fit */
+function plate(lines,w,h){
+ w=w||512;h=h||384;
+ const S=Math.min(w,h)/384;
+ return mkTex('pl',w,h,(x,W,H)=>{
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2b170a');g.addColorStop(1,'#150b05');x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.strokeStyle='#f5c14a';
+  x.lineWidth=Math.max(2,12*S);x.strokeRect(8*S,8*S,W-16*S,H-16*S);
+  x.lineWidth=Math.max(1,3*S);x.strokeRect(20*S,20*S,W-40*S,H-40*S);
+  x.textAlign='center';x.textBaseline='middle';
+  let y=(H-lines.reduce((a,l)=>a+l[1]*1.15,0))/2;
+  lines.forEach(l=>{x.font='800 '+l[1]+'px Inter,system-ui,sans-serif';x.fillStyle=l[2];x.fillText(l[0],W/2,y+l[1]*.575);y+=l[1]*1.15});
+ });
+}
+
+function buildHome(){
+ killHome();
+ const root=new BABYLON.TransformNode('home',scene),cast=[],dis=[];root.position.set(0,0,HZ);root.scaling.setAll(.001);
+
+ /* ---- white marble texture ---- */
+ const mtex=mkTex('marble',256,256,(x,w,h)=>{
+  x.fillStyle='#f5f2ec';x.fillRect(0,0,w,h);
+  for(let i=0;i<18;i++){
+   let px=Math.random()*w,py=Math.random()*h;
+   x.beginPath();x.moveTo(px,py);
+   for(let j=0;j<20;j++){px+=(Math.random()-.5)*45;py+=(Math.random()-.5)*45;x.lineTo(px,py)}
+   x.strokeStyle='rgba(160,155,165,'+(0.05+Math.random()*0.06)+')';
+   x.lineWidth=0.5+Math.random()*1.5;x.stroke();
+  }
+ });
+
+ /* ---- materials ---- */
+ const M=(c,tex,sp,em)=>{const m=new BABYLON.StandardMaterial('hmm',scene);m.diffuseColor=c;if(tex)m.diffuseTexture=tex;m.emissiveColor=em||C3(.02,.02,.03);m.specularColor=C3(sp||.3,sp||.3,sp||.3);m.specularPower=80;dis.push(m);return m};
+ const marble=M(C3(1,1,1),mtex,.4);
+ const marbleD=M(C3(.94,.93,.91),mtex,.25);
+ const gold=M(C3(1,.82,.3),null,.9,C3(.18,.13,.03));gold.specularPower=150;
+ const lamp=M(C3(.6,.52,.35),null,.1);
+ const wood=M(C3(.4,.28,.16),null,.15);
+
+ const reg=(m,mt,x,y,z,c)=>{m.material=mt;m.parent=root;m.position.set(x,y,z);m.isPickable=false;m.receiveShadows=true;if(c){shadow.addShadowCaster(m);cast.push(m)}return m};
+ const box=(w,h,d,x,y,z,mt,c)=>reg(BABYLON.MeshBuilder.CreateBox('hb',{width:w,height:h,depth:d},scene),mt,x,y,z,c);
+ const cyl=(a,b,h,x,y,z,mt,t,c)=>reg(BABYLON.MeshBuilder.CreateCylinder('hc',{diameterTop:a,diameterBottom:b,height:h,tessellation:t||24},scene),mt,x,y,z,c);
+ const sph=(d,x,y,z,mt)=>reg(BABYLON.MeshBuilder.CreateSphere('hs',{diameter:d,segments:16},scene),mt,x,y,z);
+
+ const W=3.6,D=2.8,H=HB;
+ const dw=0.8,dh=1.0;
+ const fz=-D/2+.09;
+
+ /* base slab */
+ box(W+.24,.06,D+.24,0,.03,0,marbleD,1);
+ /* back wall */
+ box(W,H,.18,0,H/2,D/2-.09,marble,1);
+ /* side walls */
+ box(.18,H,D-.36,-W/2+.09,H/2,0,marble,1);
+ box(.18,H,D-.36,W/2-.09,H/2,0,marble,1);
+ /* front wall pieces around door */
+ const sw=(W-dw)/2;
+ box(sw,H,.18,-(dw/2+sw/2),H/2,fz,marble,1);
+ box(sw,H,.18,(dw/2+sw/2),H/2,fz,marble,1);
+ box(dw,H-dh-0.06,.18,0,dh+0.03+(H-dh-0.06)/2,fz,marble,1);
+ /* door (wood) */
+ box(dw-.08,dh-.05,.06,0,(dh-.05)/2,fz-.05,wood,1);
+ /* gold door frame */
+ box(dw+.06,.06,.12,0,dh+.02,fz-.02,gold);
+ box(.06,dh+.06,.12,-dw/2-.03,dh/2,fz-.02,gold);
+ box(.06,dh+.06,.12,dw/2+.03,dh/2,fz-.02,gold);
+ /* ceiling slab (overhang sides only, keeps front flush so plaques stay visible) */
+ box(W+.1,.08,D,0,H+.04,0,marbleD);
+
+ /* corner columns: marble shafts + gold capitals */
+ const cr=0.11;
+ [[-W/2+.14,D/2-.14],[W/2-.14,D/2-.14],[-W/2+.14,-D/2+.14],[W/2-.14,-D/2+.14]].forEach(c=>{
+  cyl(cr*2,cr*2.2,H,c[0],H/2,c[1],marble,24,1);
+  cyl(cr*2.6,cr*2.6,.06,c[0],H+.03,c[1],gold,20);
+  cyl(cr*2.4,cr*2.4,.05,c[0],.025,c[1],marbleD,20);
+ });
+
+ /* roof: low white-marble pyramid + gold finial */
+ const ry=H+.1;
+ box(W+.15,.06,D,0,ry+.03,0,marbleD,1);
+ const roofH=0.6,roofBase=W+0.5;
+ const roof=cyl(0,roofBase,roofH,0,ry+.06+roofH/2,0,marble,4,1);
+ roof.rotation.y=Math.PI/4;
+ sph(.13,0,ry+.06+roofH+.08,0,gold);
+ cyl(0,.045,.2,0,ry+.06+roofH+.25,0,gold,8);
+
+ /* lamps above door */
+ [[-dw/2-0.12],[dw/2+0.12]].forEach(p=>{
+  cyl(.02,.02,.24,p[0],dh+0.28,fz-.08,gold,6);
+  sph(.16,p[0],dh+0.15,fz-.08,lamp);
+ });
+
+ /* ---- plaques ---- */
+ /* congratulations plaque centered above the door */
+ const congratsT=plate([['CONGRATULATIONS!',40,'#f5c14a']],512,128);
+ const congratsM=BABYLON.MeshBuilder.CreatePlane('plc',{width:1.3,height:0.32},scene);
+ const cpM=new BABYLON.StandardMaterial('plcm',scene);
+ cpM.diffuseColor=C3(0,0,0);cpM.specularColor=C3(0,0,0);cpM.emissiveTexture=congratsT;
+ congratsM.material=cpM;congratsM.parent=root;
+ congratsM.position.set(0,1.32,fz-0.03);congratsM.isPickable=false;
+ dis.push(cpM,congratsT);
+
+ /* left plaque: levels completed */
+ const lvN=LV.length;
+ const lvT=plate([['LEVELS',32,'#f5c14a'],[String(lvN),72,'#ffffff']],320,320);
+ const lvM=BABYLON.MeshBuilder.CreatePlane('pll',{width:0.5,height:0.5},scene);
+ const lvPM=new BABYLON.StandardMaterial('pllm',scene);
+ lvPM.diffuseColor=C3(0,0,0);lvPM.specularColor=C3(0,0,0);lvPM.emissiveTexture=lvT;
+ lvM.material=lvPM;lvM.parent=root;
+ lvM.position.set(-(dw/2+0.45),0.72,fz-0.03);lvM.isPickable=false;
+ dis.push(lvPM,lvT);
+
+ /* right plaque: final score */
+ const sc=String(score);
+ const scSize=Math.min(72,240/(Math.max(1,sc.length)*0.6));
+ const scT=plate([['SCORE',32,'#f5c14a'],[sc,scSize,'#ffffff']],320,320);
+ const scM=BABYLON.MeshBuilder.CreatePlane('pls',{width:0.5,height:0.5},scene);
+ const scPM=new BABYLON.StandardMaterial('plsm',scene);
+ scPM.diffuseColor=C3(0,0,0);scPM.specularColor=C3(0,0,0);scPM.emissiveTexture=scT;
+ scM.material=scPM;scM.parent=root;
+ scM.position.set(dw/2+0.45,0.72,fz-0.03);scM.isPickable=false;
+ dis.push(scPM,scT);
+
+ hm={root,cast,dis,lamp,pl:[{t:congratsT},{t:lvT},{t:scT}],s:0,lit:0,on:false,ph:0,pt:0,done:false};
+}
+function killHome(){
+ if(!hm)return;
+ hm.cast.forEach(m=>shadow.removeShadowCaster(m));hm.root.dispose();hm.dis.forEach(o=>o.dispose());hm=null;if(hmLight)hmLight.intensity=0;
+}
+function hmStart(){if(hm){hm.ph=1;hm.pt=0}}
+/* camera: wide front view of the home, slowly dollies in as the ball rolls toward the door */
+function homeCam(){
+ const t=Math.tan(.3),asp=engine.getAspectRatio(cam),d=Math.max(3.1/(t*asp),3.4/t),f=Math.min(1,Math.max(0,(hero.position.z+3.6)/(HZ+3.6)));
+ dP.set(Math.sin(performance.now()*4e-4)*.7,3.2,HZ-d+f*d*.12);dT.set(0,1.4,HZ-.4);
+}
+function updHome(dt,now){
+ if(!hm)return;
+ if(hm.s<1){hm.s=Math.min(1,hm.s+dt/1.2);hm.root.scaling.setAll(Math.max(.001,1-Math.pow(1-hm.s,3)))}
+ hm.lit+=((hm.on?1:0)-hm.lit)*(1-Math.exp(-3*dt));const l=hm.lit;
+ hm.lamp.emissiveColor.set(l,.78*l,.38*l);hmLight.intensity=l*(1.5+Math.sin(now*9)*.06);hm.pl.forEach(p=>p.t.level=.6+.4*l);
+ if(state!=='home'||!hm.ph)return;
+ hm.pt+=dt;
+ if(hm.ph===1){if(hm.pt>.9){hm.ph=2;hm.pt=0}}
+ else if(hm.ph===2){
+  const z=hero.position.z;hero.position.z=Math.min(HZ,z+Math.max(.6,Math.min(HS,(HZ-z)*2.2))*dt);
+  if(!hm.on&&hero.position.z>HZ-1.1){hm.on=true;SFX.gateOpen();vib(20)}
+  if(HZ-hero.position.z<.02){hero.position.z=HZ;hm.on=true;hm.ph=3;hm.pt=0;SFX.win()}
+ }else if(hm.ph===3){
+  /* confetti from roof removed; only reveal the win panel */
+  if(!hm.done&&hm.pt>1.9){hm.done=true;$('win').classList.remove('hid')}
+ }
+}
+
 /* ================= SCENE ================= */
 function mkTex(name,w,h,draw){const t=new BABYLON.DynamicTexture(name,{width:w,height:h},scene,true),x=t.getContext();draw(x,w,h);t.update();return t}
 
@@ -336,7 +513,7 @@ function init(){
  const hl=new BABYLON.HemisphericLight('h',V3(0,1,0),scene);hl.intensity=.45;hl.diffuse=C3(.7,.8,1);hl.groundColor=C3(.1,.12,.2);
  const dl=new BABYLON.DirectionalLight('d',V3(-1,-2,-1),scene);dl.intensity=.9;dl.position=V3(20,40,20);dl.shadowMinZ=1;dl.shadowMaxZ=120;
  shadow=new BABYLON.ShadowGenerator(1024,dl);shadow.usePercentageCloserFiltering=true;shadow.bias=.0006;shadow.normalBias=.02;shadow.darkness=.4;
- glow=new BABYLON.GlowLayer('g',scene);glow.intensity=.8;
+ glow=new BABYLON.GlowLayer('g',scene);glow.intensity=.8;hmLight=new BABYLON.PointLight('hpl',V3(0,1.4,HZ+.1),scene);hmLight.diffuse=C3(1,.78,.45);hmLight.specular=C3(0,0,0);hmLight.intensity=0;hmLight.range=7;
 
  flare=mkTex('fl',64,64,x=>{const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.4,'rgba(255,255,255,.45)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64)});flare.hasAlpha=true;
 
@@ -447,6 +624,7 @@ const FX={
  hit:{c1:[.8,.5,1,1],c2:[1,.9,.6,1],d1:[-2.5,.4,-2.5],d2:[2.5,3,2.5],g:-9,r:1200,du:.12,l:[.25,.6],s:[.04,.12]},
  death:{c1:[.3,1,.3,1],c2:[1,.9,.4,1],d1:[-3,-1,-3],d2:[3,3,3],g:-4,r:2000,du:.4,l:[.5,1.2],s:[.08,.2]},
  collect:{c1:[1,.85,.2,1],c2:[1,1,.6,1],d1:[-2,.5,-2],d2:[2,4,2],g:-7,r:1800,du:.16,l:[.2,.6],s:[.06,.15]},
+ burst:{c1:[1,1,1,1],c2:[1,1,1,1],d1:[-3.2,6,-3.2],d2:[3.2,11,3.2],g:-7,r:1100,du:.25,l:[1.4,2.6],s:[.12,.26]},
  warp:{c1:[1,1,1,1],c2:[1,1,1,1],d1:[-1.2,.3,-1.2],d2:[1.2,2.4,1.2],g:-2.5,r:700,du:.1,l:[.3,.7],s:[.04,.1]},
  gate:{c1:[.3,1,.8,1],c2:[.7,1,1,1],d1:[-2,1,-2],d2:[2,5,2],g:-3,r:1500,du:.3,l:[.4,1.1],s:[.06,.16]}};
 function fx(t,p,cc){const o=FX[t],ps=new BABYLON.ParticleSystem('fx',700,scene);ps.particleTexture=flare;ps.emitter=p.clone();ps.color1=cc?C4(cc[0],cc[1],cc[2],1):C4(...o.c1);ps.color2=cc?C4(.5+cc[0]*.5,.5+cc[1]*.5,.5+cc[2]*.5,1):C4(...o.c2);ps.colorDead=C4(0,0,0,0);ps.direction1=V3(...o.d1);ps.direction2=V3(...o.d2);ps.gravity=V3(0,o.g,0);ps.emitRate=o.r;ps.targetStopDuration=o.du;ps.minLifeTime=o.l[0];ps.maxLifeTime=o.l[1];ps.minSize=o.s[0];ps.maxSize=o.s[1];ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE;ps.onAnimationEnded=()=>setTimeout(()=>ps.dispose(false),0);ps.start()}
@@ -478,7 +656,7 @@ function updFrags(dt,k){
 function loadLevel(i,reset=true){
  if(!LV.length){console.error('[GRIDORA] No levels loaded');return}
  if(i>=LV.length){i=0;score=0}
- lvIdx=i;const L=LV[i];ST.set('spaceBoardLevel',i);$('lv').textContent=L.n;$('sc').textContent=score;gHide();
+ lvIdx=i;const L=LV[i];ST.set('spaceBoardLevel',i);$('lv').textContent=L.n;updJourney();$('sc').textContent=score;gHide();
  clearFrags();clearDyn();killGate();tpGrow=0;pendPort=null;tpCount=0;token++;totalPow=L.pw.length;got=0;steps=0;combo=0;gateOpen=totalPow===0;powHidden=false;dropH=DROP;
  obs=new Set(L.obs);buildWall(L.gate,!gateOpen);buildGate(L.gate,gateOpen);buildDots();powVisible=!powVisible;refreshPower();
  if(reset){col=1;row=1;hero.position.set(wc(1),CH/2,wc(1));hero.rotationQuaternion=BABYLON.Quaternion.Identity();rollQ=BABYLON.Quaternion.Identity();hero.scaling.setAll(1);ang=0;visAng=0}
@@ -530,15 +708,15 @@ function portalTransition(){
  vel=V3(0,-6,0);dropH=DROP;snap=true;camMode='HERO';camBlend=1;fall='drop2';state='falling';
 }
 function winTransition(){
- award();flash();showPortal(false);showUI(false);gHide();closeHelp();powHidden=true;refreshPower();
- clearDyn();killGate();killLinks();walls.forEach(w=>{shadow.removeShadowCaster(w);w.dispose()});walls=[];
+ award();flash();showPortal(false);showUI(false);$('jb').classList.remove('hid');updJourney(true);gHide();closeHelp();powHidden=true;refreshPower();
+ buildHome();clearDyn();killGate();killLinks();walls.forEach(w=>{shadow.removeShadowCaster(w);w.dispose()});walls=[];
  boardMat.emissiveColor=C3(.1,.13,.2);
  [[.98,.76,.28,.38,.66,.98],[.98,.37,.48,.36,.9,.72],[.67,.47,.98,1,1,1]].forEach(c=>{const ps=new BABYLON.ParticleSystem('cf',300,scene);ps.particleTexture=flare;ps.emitter=V3(0,16,0);ps.minEmitBox=V3(-6,0,-6);ps.maxEmitBox=V3(6,0,6);ps.color1=C4(c[0],c[1],c[2],1);ps.color2=C4(c[3],c[4],c[5],1);ps.colorDead=C4(1,1,1,0);ps.direction1=V3(-.5,-1,-.5);ps.direction2=V3(.5,-1.6,.5);ps.gravity=V3(0,-2,0);ps.minSize=.12;ps.maxSize=.26;ps.minLifeTime=4;ps.maxLifeTime=6;ps.emitRate=50;ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE;ps.preWarmCycles=60;ps.preWarmStepOffset=5;ps.start();confSys.push(ps)});
  celeb=BABYLON.MeshBuilder.CreateTorus('cr',{diameter:BS*1.22,thickness:.14,tessellation:96},scene);const rm=new BABYLON.StandardMaterial('crm',scene);rm.emissiveColor=C3(.35,.62,1);rm.diffuseColor=C3(.15,.3,.6);celeb.material=rm;celeb.position.y=-.22;
  hero.position.set(0,15,-3.6);hero.rotationQuaternion=BABYLON.Quaternion.Identity();rollQ=BABYLON.Quaternion.Identity();hero.scaling.setAll(1);
  vel=V3(0,-6,0);dropH=15;camMode='BOARD';snap=true;camBlend=1;trail.start();
 }
-function endWin(){confSys.forEach(p=>p.dispose(false));confSys=[];if(celeb){celeb.dispose();celeb=null}boardMat.emissiveColor=C3(0,0,0)}
+function endWin(){killHome();confSys.forEach(p=>p.dispose(false));confSys=[];if(celeb){celeb.dispose();celeb=null}boardMat.emissiveColor=C3(0,0,0)}
 $('againBtn').onclick=()=>{$('win').classList.add('hid');endWin();resetProgress();showUI(true);ang=0;visAng=0;camMode='HERO';snap=true;powHidden=false;loadLevel(0);state='playing';refreshPower();toast('Level 1');gStart()};
 $('exitBtn').onclick=()=>location.reload();
 
@@ -551,12 +729,12 @@ function land(win){
 const HD=11.9,HH=8.4,HMIN=4.7,HLY=.85,BCAM=V3(0,39.8,-11.2),dP=V3(0,0,0),dT=V3(0,0,0),tgt=V3(0,.6,0);
 function updateCamera(dt){
  const hp=hero.position;let k=9.5;
- if(state==='falling'&&fall==='drop1'){
+ if(state==='home'){homeCam();k=2.2}else if(state==='falling'&&fall==='drop1'){
   const d=BABYLON.Vector3.Distance(hp,ringMesh.position),b=.25+Math.max(0,Math.min(1,1-d/25))*.55;
   dP.set(hp.x-8.4,hp.y+7.0,hp.z);dT.set(hp.x+(ringMesh.position.x-hp.x)*b,hp.y+(ringMesh.position.y-hp.y)*b,hp.z+(ringMesh.position.z-hp.z)*b);k=6.5;
  }else if(state==='falling'){
-  const gy=CH/2,pr=Math.min(1,Math.max(0,1-(hp.y-gy)/Math.max(1,dropH))),e=1-Math.pow(1-pr,2),dm=1+1.7*(1-e),hm=1+1.15*(1-e),hw=.45+.55*e;
-  dP.set(hp.x,Math.max(hp.y+HH*hm,HMIN),hp.z-HD*dm);dT.set(hp.x*hw,hp.y*hw+gy*(1-hw),hp.z*hw);k=6;
+  const gy=CH/2,pr=Math.min(1,Math.max(0,1-(hp.y-gy)/Math.max(1,dropH))),e=1-Math.pow(1-pr,2),dm=1+1.7*(1-e),hm_=1+1.15*(1-e),hw=.45+.55*e;
+  dP.set(hp.x,Math.max(hp.y+HH*hm_,HMIN),hp.z-HD*dm);dT.set(hp.x*hw,hp.y*hw+gy*(1-hw),hp.z*hw);k=6;
  }else{
   const tb=camMode==='HERO'?1:0;camBlend+=(tb-camBlend)*(1-Math.exp(-4.5*dt));const t=camBlend,fx_=Math.sin(ang),fz=Math.cos(ang);
   const hx=hp.x-fx_*HD,hy=Math.max(hp.y+HH,HMIN),hz=hp.z-fz*HD;
@@ -590,7 +768,7 @@ function loop(){
   if(gate.t<1){gate.t=Math.min(1,gate.t+dt/.7);const e=1-Math.pow(1-gate.t,3);gate.root.scaling.setAll(Math.max(.001,e*(1+Math.sin(gate.t*Math.PI)*.1)))}
   gate.dm.alpha=.35+Math.sin(now*3)*.1;gate.orbs.forEach((o,i)=>{const a=now*2.2+i*Math.PI/3;o.position.set(0,.48+Math.sin(a)*.4,Math.cos(a)*.34)});gate.bm.alpha=.14+Math.sin(now*2.5)*.06}
  if(celeb){celeb.rotation.y+=dt*.5;const p=1+Math.sin(now*2.4)*.025;celeb.scaling.set(p,1,p)}
- updLinks(dt,now);for(let i=shocks.length-1;i>=0;i--){const s=shocks[i];s.t+=dt;const k=Math.min(1,s.t/.55),e=1-(1-k)*(1-k);s.m.scaling.set(.5+e*3,1,.5+e*3);s.m.material.alpha=.4*(1-k)*(1-k);if(k>=1){glow.removeExcludedMesh(s.m);s.m.dispose(false,true);shocks.splice(i,1)}}
+ updLinks(dt,now);updHome(dt,now);for(let i=shocks.length-1;i>=0;i--){const s=shocks[i];s.t+=dt;const k=Math.min(1,s.t/.55),e=1-(1-k)*(1-k);s.m.scaling.set(.5+e*3,1,.5+e*3);s.m.material.alpha=.4*(1-k)*(1-k);if(k>=1){glow.removeExcludedMesh(s.m);s.m.dispose(false,true);shocks.splice(i,1)}}
  if(squashT>0&&state!=='dying'){squashT-=dt;const a=squashT>0?Math.sin(squashT/.35*Math.PI)*.3:0;hero.scaling.set(1+a,1-a*1.1,1+a)}
  refreshPower();
 
@@ -618,11 +796,11 @@ function loop(){
   }else if(fall==='drop2'){
    if(hero.position.y<=CH/2){land(false);snap=false;state='playing';refreshPower();preview();toast('Level '+LV[lvIdx].n);setTimeout(gStart,500)}
   }else if(fall==='win_drop'){
-   if(hero.position.y<=CH/2){land(true);state='won';$('finalScore').textContent=score;const b=parseInt(ST.get('gridoraBest'))||0;if(score>b)ST.set('gridoraBest',score);$('bestTxt').textContent='Best '+Math.max(b,score);setTimeout(()=>$('win').classList.remove('hid'),700);SFX.win()}
+   if(hero.position.y<=CH/2){land(true);state='home';hmStart();$('finalScore').textContent=score;const b=parseInt(ST.get('gridoraBest'))||0;if(score>b)ST.set('gridoraBest',score);$('bestTxt').textContent='Best '+Math.max(b,score);SFX.win()}
   }
  }
 
- if(state==='playing'||state==='falling'){
+ if(state==='playing'||state==='falling'||state==='home'){
   const dx=hero.position.x-prev.x,dz=hero.position.z-prev.z,h=Math.hypot(dx,dz);
   if(tpJump)tpJump=false;else if(h>.0005){const dir=V3(dx,0,dz).normalize(),ax=BABYLON.Vector3.Cross(BABYLON.Axis.Y,dir).normalize();rollQ=BABYLON.Quaternion.RotationAxis(ax,h/HR).multiply(rollQ);hero.rotationQuaternion=rollQ}
  }
